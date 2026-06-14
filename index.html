@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🎹 ピアノ練習</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#12121e;color:#eee;
+  height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+}
+/* ─── Header ─── */
+.header{
+  background:#1a1a30;padding:10px 14px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  border-bottom:1px solid #2a2a50;
+}
+.header h1{font-size:16px;white-space:nowrap;}
+.song-select{
+  flex:1;background:#0e0e22;color:#eee;
+  border:1px solid #3a3a6a;border-radius:8px;
+  padding:7px 10px;font-size:14px;-webkit-appearance:none;
+}
+.reset-btn{
+  background:#e94560;color:#fff;border:none;
+  border-radius:8px;padding:7px 13px;font-size:14px;cursor:pointer;
+  flex-shrink:0;font-weight:700;
+}
+/* ─── Status ─── */
+.status{
+  background:#1a1a30;padding:8px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;border-bottom:1px solid #2a2a50;
+}
+.next-label{font-size:11px;color:#888;margin-bottom:2px;}
+.next-note{font-size:28px;font-weight:700;color:#4ecdc4;font-family:monospace;letter-spacing:1px;}
+.feedback-emoji{font-size:26px;min-width:36px;text-align:center;}
+.score-display{font-size:13px;color:#888;text-align:right;}
+/* ─── Progress ─── */
+.progress{height:4px;background:#2a2a50;flex-shrink:0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#4ecdc4,#e94560);transition:width .3s;}
+/* ─── Sheet Music ─── */
+.score-section{flex:1;background:#fff;overflow:hidden;min-height:0;}
+.score-scroll{width:100%;height:100%;overflow-x:auto;overflow-y:auto;}
+#score-container{display:inline-block;min-width:100%;padding:4px 0;}
+/* ─── Keyboard ─── */
+.keyboard-wrap{
+  flex-shrink:0;background:#0a0a18;
+  padding:10px 8px 14px;
+  overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+}
+.keyboard{
+  display:inline-flex;position:relative;
+  touch-action:pan-x;user-select:none;-webkit-user-select:none;
+}
+.white-key{
+  width:44px;height:110px;
+  background:#fafafa;border:1px solid #bbb;
+  border-bottom-left-radius:5px;border-bottom-right-radius:5px;
+  cursor:pointer;touch-action:none;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:5px;font-size:9px;color:#ccc;font-family:monospace;
+  position:relative;z-index:1;transition:background .07s;
+  flex-shrink:0;
+}
+.white-key.hl  {background:#b2f5e8!important;box-shadow:inset 0 -4px 0 #4ecdc4;}
+.white-key.ok  {background:#6eea90!important;}
+.white-key.ng  {background:#f08888!important;}
+.white-key.dn  {background:#ddeeff!important;}
+.black-key{
+  width:28px;height:72px;
+  background:#1c1c1c;border:1px solid #000;border-top:none;
+  border-radius:0 0 4px 4px;
+  position:absolute;top:0;z-index:2;
+  cursor:pointer;touch-action:none;transition:background .07s;
+}
+.black-key.hl  {background:#1a7a62!important;border-color:#4ecdc4;}
+.black-key.ok  {background:#1e8c40!important;}
+.black-key.ng  {background:#8c1e1e!important;}
+.black-key.dn  {background:#333!important;}
+/* ─── Completion ─── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);
+  display:none;place-items:center;z-index:999;
+}
+.overlay.show{display:grid;}
+.card{
+  background:#1a1a30;border-radius:20px;
+  padding:40px 32px;text-align:center;
+}
+.card .emoji{font-size:64px;margin-bottom:12px;}
+.card h2{font-size:24px;margin-bottom:6px;}
+.card p{color:#888;font-size:13px;margin-bottom:24px;}
+.card button{
+  background:#4ecdc4;color:#000;border:none;
+  border-radius:12px;padding:12px 32px;
+  font-size:16px;font-weight:700;cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎹 ピアノ練習</h1>
+  <select class="song-select" id="songSel"></select>
+  <button class="reset-btn" id="resetBtn" title="最初から">↺</button>
+</div>
+
+<div class="status">
+  <div>
+    <div class="next-label">次の音</div>
+    <div class="next-note" id="nextNote">──</div>
+  </div>
+  <div class="feedback-emoji" id="fbEmoji"></div>
+  <div class="score-display" id="scoreDisp">0 / 0</div>
+</div>
+
+<div class="progress"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+
+<div class="score-section">
+  <div class="score-scroll" id="scoreScroll">
+    <div id="score-container"></div>
+  </div>
+</div>
+
+<div class="keyboard-wrap">
+  <div class="keyboard" id="keyboard"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <div class="emoji">🎉</div>
+    <h2>クリア！</h2>
+    <p id="overlayMsg">おつかれさまでした</p>
+    <button id="againBtn">もう一度</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/4.2.2/vexflow.js"></script>
+<script>
+// ════════════════════════════════════════
+// SONG DATA
+// ════════════════════════════════════════
+// k = VexFlow key ("c/4"), d = duration (w/h/q/8)
+// acc = accidental string ("#" / "b") or undefined
+
+const SONGS = [
+  {
+    label:"⭐ きらきら星", timeNum:4, timeDen:4,
+    notes:[
+      {k:"c/4",d:"q"},{k:"c/4",d:"q"},{k:"g/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"a/4",d:"q"},{k:"a/4",d:"q"},{k:"g/4",d:"h"},
+      {k:"f/4",d:"q"},{k:"f/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"d/4",d:"q"},{k:"d/4",d:"q"},{k:"c/4",d:"h"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},{k:"f/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"d/4",d:"h"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},{k:"f/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"d/4",d:"h"},
+      {k:"c/4",d:"q"},{k:"c/4",d:"q"},{k:"g/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"a/4",d:"q"},{k:"a/4",d:"q"},{k:"g/4",d:"h"},
+      {k:"f/4",d:"q"},{k:"f/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"d/4",d:"q"},{k:"d/4",d:"q"},{k:"c/4",d:"h"},
+    ]
+  },
+  {
+    label:"🐑 メリーさんの羊", timeNum:4, timeDen:4,
+    notes:[
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},{k:"c/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"h"},
+      {k:"d/4",d:"q"},{k:"d/4",d:"q"},{k:"d/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"g/4",d:"q"},{k:"g/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},{k:"c/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"d/4",d:"q"},{k:"d/4",d:"q"},{k:"e/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"c/4",d:"w"},
+    ]
+  },
+  {
+    label:"🎵 よろこびの歌", timeNum:4, timeDen:4,
+    notes:[
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"f/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"g/4",d:"q"},{k:"f/4",d:"q"},{k:"e/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"c/4",d:"q"},{k:"c/4",d:"q"},{k:"d/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"e/4",d:"h"},{k:"d/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"f/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"g/4",d:"q"},{k:"f/4",d:"q"},{k:"e/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"c/4",d:"q"},{k:"c/4",d:"q"},{k:"d/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"d/4",d:"h"},{k:"c/4",d:"h"},
+      {k:"d/4",d:"q"},{k:"d/4",d:"q"},{k:"e/4",d:"q"},{k:"c/4",d:"q"},
+      {k:"d/4",d:"q"},{k:"e/4",d:"q"},{k:"f/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"c/4",d:"q"},{k:"d/4",d:"q"},{k:"e/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"g/4",d:"h"},{k:"g/4",d:"h"},
+    ]
+  },
+  {
+    label:"🎂 ハッピーバースデー", timeNum:3, timeDen:4,
+    notes:[
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},{k:"a/4",d:"q"},
+      {k:"g/4",d:"q"},{k:"c/5",d:"q"},{k:"b/4",d:"q"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},{k:"a/4",d:"q"},
+      {k:"g/4",d:"q"},{k:"d/5",d:"q"},{k:"c/5",d:"q"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},{k:"g/5",d:"q"},
+      {k:"e/5",d:"q"},{k:"c/5",d:"q"},{k:"b/4",d:"q"},
+      {k:"a/4",d:"q"},{k:"f/5",d:"q"},{k:"f/5",d:"q"},
+      {k:"e/5",d:"q"},{k:"c/5",d:"q"},{k:"d/5",d:"q"},
+      {k:"c/5",d:"h"},{k:"c/5",d:"q"},
+    ]
+  }
+];
+
+// ════════════════════════════════════════
+// NOTE FREQUENCIES  (C3–C6)
+// ════════════════════════════════════════
+const FREQ = {
+  'C3':130.81,'D3':146.83,'E3':164.81,'F3':174.61,'G3':196.00,'A3':220.00,'B3':246.94,
+  'C#3':138.59,'D#3':155.56,'F#3':185.00,'G#3':207.65,'A#3':233.08,
+  'C4':261.63,'D4':293.66,'E4':329.63,'F4':349.23,'G4':392.00,'A4':440.00,'B4':493.88,
+  'C#4':277.18,'D#4':311.13,'F#4':369.99,'G#4':415.30,'A#4':466.16,
+  'C5':523.25,'D5':587.33,'E5':659.25,'F5':698.46,'G5':783.99,'A5':880.00,'B5':987.77,
+  'C#5':554.37,'D#5':622.25,'F#5':739.99,'G#5':830.61,'A#5':932.33,
+  'C6':1046.50,'D6':1174.66,'E6':1318.51,
+  'C#6':1108.73,'D#6':1244.51,
+};
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let songIdx = 0;
+let currentNote = 0;
+let total = 0;
+let audioCtx = null;
+
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+const DUR_BEATS = {w:4,h:2,q:1,'8':0.5,'8d':0.75,hd:3,qd:1.5};
+
+function vexToId(k) {
+  // "c/4" → "C4", "c#/4" → "C#4", "cn/4" → "C4", "a#/4" → "A#4"
+  const [pitch, oct] = k.split('/');
+  const p = pitch.replace('n','').toUpperCase();
+  return p + oct;
+}
+
+function splitMeasures(song) {
+  const bpm = song.timeNum;
+  const measures = [];
+  let cur = [], beats = 0;
+  for (const n of song.notes) {
+    cur.push(n);
+    beats += DUR_BEATS[n.d] || 1;
+    if (Math.abs(beats - bpm) < 0.01 || beats >= bpm) {
+      measures.push(cur);
+      cur = []; beats = 0;
+    }
+  }
+  if (cur.length) measures.push(cur);
+  return measures;
+}
+
+// ════════════════════════════════════════
+// AUDIO
+// ════════════════════════════════════════
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playFreq(freq, dur = 1.2) {
+  ensureAudio();
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const master = ctx.createGain();
+  master.gain.setValueAtTime(0, now);
+  master.gain.linearRampToValueAtTime(0.4, now + 0.01);
+  master.gain.exponentialRampToValueAtTime(0.001, now + dur);
+  master.connect(ctx.destination);
+
+  [[1,1],[2,0.4],[3,0.2],[4,0.1],[6,0.05]].forEach(([h,amp])=>{
+    const osc = ctx.createOscillator();
+    const g   = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq * h;
+    g.gain.value = amp;
+    osc.connect(g); g.connect(master);
+    osc.start(now); osc.stop(now + dur + 0.05);
+  });
+}
+
+function playNote(noteId) {
+  const f = FREQ[noteId];
+  if (f) playFreq(f);
+}
+
+// ════════════════════════════════════════
+// SCORE RENDERING (VexFlow)
+// ════════════════════════════════════════
+function renderScore() {
+  const container = document.getElementById('score-container');
+  container.innerHTML = '';
+
+  const song = SONGS[songIdx];
+  const measures = splitMeasures(song);
+  const VF = Vex.Flow;
+
+  // Layout: measures per row based on screen width
+  const scrollW = document.getElementById('scoreScroll').clientWidth || 360;
+  const FIRST_W  = Math.min(220, scrollW - 20);
+  const MEAS_W   = Math.max(140, Math.min(180, (scrollW - 20) / 3));
+  const ROW_H    = 110;
+  const MARGIN   = 10;
+
+  // Figure out how many measures fit per row
+  let perRow = 1;
+  {
+    let used = FIRST_W;
+    while (used + MEAS_W <= scrollW - 20) { used += MEAS_W; perRow++; }
+  }
+
+  const rows = [];
+  for (let i = 0; i < measures.length; i += perRow) rows.push(measures.slice(i, i + perRow));
+  const totalH = rows.length * ROW_H + 20;
+  const totalW = Math.max(scrollW, FIRST_W + MEAS_W * (perRow - 1) + 20);
+
+  const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+  renderer.resize(totalW, totalH);
+  const ctx = renderer.getContext();
+
+  let globalIdx = 0;
+
+  rows.forEach((rowMeasures, ri) => {
+    let x = MARGIN;
+    const y = MARGIN + ri * ROW_H;
+
+    rowMeasures.forEach((mNotes, mi) => {
+      const isFirst = (ri === 0 && mi === 0);
+      const w = isFirst ? FIRST_W : MEAS_W;
+      const stave = new VF.Stave(x, y, w);
+      if (isFirst) stave.addClef('treble').addTimeSignature(`${song.timeNum}/${song.timeDen}`);
+      stave.setContext(ctx).draw();
+
+      const staveNotes = mNotes.map((n, ni) => {
+        const gIdx = globalIdx + ni;
+        const sn = new VF.StaveNote({ keys: [n.k], duration: n.d });
+        if (n.acc) sn.addModifier(new VF.Accidental(n.acc), 0);
+
+        if (gIdx === currentNote) {
+          sn.setStyle({ fillStyle:'#e94560', strokeStyle:'#e94560' });
+        } else if (gIdx < currentNote) {
+          sn.setStyle({ fillStyle:'#4ecdc4', strokeStyle:'#4ecdc4' });
+        } else {
+          sn.setStyle({ fillStyle:'#333', strokeStyle:'#333' });
+        }
+        return sn;
+      });
+      globalIdx += mNotes.length;
+
+      try {
+        const voice = new VF.Voice({ num_beats: song.timeNum, beat_value: song.timeDen })
+          .setMode(VF.Voice.Mode.SOFT);
+        voice.addTickables(staveNotes);
+        new VF.Formatter().joinVoices([voice]).format([voice], w - (isFirst ? 70 : 24));
+        voice.draw(ctx, stave);
+      } catch(e) { console.warn('VexFlow render err', e); }
+
+      x += w;
+    });
+  });
+
+  // Scroll current note into view
+  const curRow = Math.floor(
+    measures.findIndex((_, i) => {
+      let s = 0;
+      for (let j = 0; j <= i; j++) s += measures[j].length;
+      return s > currentNote;
+    }) / perRow
+  );
+  if (curRow >= 0) {
+    document.getElementById('scoreScroll').scrollTop = Math.max(0, curRow * ROW_H - 20);
+  }
+}
+
+// ════════════════════════════════════════
+// KEYBOARD BUILD
+// ════════════════════════════════════════
+// Octaves to show: C3–C6 (4 octaves)
+const OCTAVES = [3, 4, 5];
+const WHITE = ['C','D','E','F','G','A','B'];
+// Black key positions (left edge from octave start), offset within 7 white-key block
+// C# at 1*44-14=30, D# at 2*44-14=74, F# at 4*44-14=162, G# at 5*44-14=206, A# at 6*44-14=250
+const BLACKS = [
+  {note:'C#', left:30}, {note:'D#', left:74},
+  {note:'F#', left:162},{note:'G#', left:206},{note:'A#', left:250}
+];
+const WHITE_KEY_W = 44;
+
+function buildKeyboard() {
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML = '';
+
+  const doKey = (noteId, el) => {
+    el.dataset.note = noteId;
+    el.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      handlePress(noteId, el);
+    });
+  };
+
+  OCTAVES.forEach(oct => {
+    const block = document.createElement('div');
+    block.style.cssText = `position:relative;display:inline-block;width:${WHITE_KEY_W*7}px;flex-shrink:0;`;
+
+    WHITE.forEach((n,i) => {
+      const key = document.createElement('div');
+      key.className = 'white-key';
+      key.textContent = (n==='C') ? `C${oct}` : '';
+      key.style.left = `${i * WHITE_KEY_W}px`;
+      key.style.position = 'absolute';
+      key.style.top = '0';
+      doKey(`${n}${oct}`, key);
+      block.appendChild(key);
+    });
+    // Spacer so block has height
+    const spacer = document.createElement('div');
+    spacer.style.cssText = `height:110px;display:block;`;
+    block.appendChild(spacer);
+
+    BLACKS.forEach(({note, left}) => {
+      const key = document.createElement('div');
+      key.className = 'black-key';
+      key.style.left = `${left}px`;
+      doKey(`${note}${oct}`, key);
+      block.appendChild(key);
+    });
+
+    kb.appendChild(block);
+  });
+
+  // Final C6
+  const lastBlock = document.createElement('div');
+  lastBlock.style.cssText = `position:relative;display:inline-block;width:${WHITE_KEY_W}px;flex-shrink:0;`;
+  const c6 = document.createElement('div');
+  c6.className = 'white-key';
+  c6.textContent = 'C6';
+  c6.style.cssText = `position:absolute;left:0;top:0;`;
+  doKey('C6', c6);
+  const sp2 = document.createElement('div');
+  sp2.style.cssText = `height:110px;display:block;`;
+  lastBlock.appendChild(c6);
+  lastBlock.appendChild(sp2);
+  kb.appendChild(lastBlock);
+
+  // Scroll keyboard to C4 (second octave = index 1 → offset 7*44 = 308px)
+  setTimeout(()=>{
+    document.querySelector('.keyboard-wrap').scrollLeft = WHITE_KEY_W * 7 - 20;
+  }, 50);
+}
+
+function flashKey(noteId, cls, ms = 300) {
+  const el = document.querySelector(`[data-note="${noteId}"]`);
+  if (!el) return;
+  el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), ms);
+}
+
+function highlightCurrentKey() {
+  // Remove previous highlight
+  document.querySelectorAll('.hl').forEach(e => e.classList.remove('hl'));
+  const song = SONGS[songIdx];
+  if (currentNote >= song.notes.length) return;
+  const noteId = vexToId(song.notes[currentNote].k);
+  const el = document.querySelector(`[data-note="${noteId}"]`);
+  if (el) {
+    el.classList.add('hl');
+    // Scroll keyboard to show this key
+    const kbWrap = document.querySelector('.keyboard-wrap');
+    const kbRect = kbWrap.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    if (elRect.left < kbRect.left + 20 || elRect.right > kbRect.right - 20) {
+      el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    }
+  }
+}
+
+// ════════════════════════════════════════
+// GAME LOGIC
+// ════════════════════════════════════════
+function handlePress(noteId, el) {
+  ensureAudio();
+  playNote(noteId);
+
+  const song = SONGS[songIdx];
+  if (currentNote >= song.notes.length) return;
+
+  const expected = vexToId(song.notes[currentNote].k);
+
+  if (noteId === expected) {
+    // Correct!
+    flashKey(noteId, 'ok', 400);
+    document.getElementById('fbEmoji').textContent = '✅';
+    currentNote++;
+    updateStatus();
+    renderScore();
+    highlightCurrentKey();
+
+    if (currentNote >= song.notes.length) {
+      setTimeout(showComplete, 500);
+    }
+  } else {
+    // Wrong
+    flashKey(noteId, 'ng', 350);
+    flashKey(expected, 'hl', 600);  // hint
+    document.getElementById('fbEmoji').textContent = '❌';
+    setTimeout(()=>{
+      document.getElementById('fbEmoji').textContent = '';
+    }, 800);
+  }
+}
+
+function updateStatus() {
+  const song = SONGS[songIdx];
+  total = song.notes.length;
+  const done = currentNote;
+
+  if (done >= total) {
+    document.getElementById('nextNote').textContent = 'DONE';
+  } else {
+    document.getElementById('nextNote').textContent = vexToId(song.notes[done].k);
+  }
+
+  document.getElementById('scoreDisp').textContent = `${done} / ${total}`;
+  document.getElementById('progFill').style.width = `${(done/total)*100}%`;
+}
+
+function showComplete() {
+  document.getElementById('overlayMsg').textContent = `全${total}音 クリア！`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+// ════════════════════════════════════════
+// INIT / RESET
+// ════════════════════════════════════════
+function loadSong(idx) {
+  songIdx = idx;
+  currentNote = 0;
+  document.getElementById('fbEmoji').textContent = '';
+  document.getElementById('overlay').classList.remove('show');
+  updateStatus();
+  renderScore();
+  highlightCurrentKey();
+}
+
+function init() {
+  // Populate song select
+  const sel = document.getElementById('songSel');
+  SONGS.forEach((s,i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = s.label;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', e => loadSong(+e.target.value));
+
+  document.getElementById('resetBtn').addEventListener('click', () => loadSong(songIdx));
+  document.getElementById('againBtn').addEventListener('click', () => loadSong(songIdx));
+
+  buildKeyboard();
+  loadSong(0);
+
+  window.addEventListener('resize', () => {
+    renderScore();
+  });
+}
+
+// Wait for VexFlow to load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  // Script loaded after DOM
+  if (typeof Vex !== 'undefined') init();
+  else window.addEventListener('load', init);
+}
+</script>
+</body>
+</html>
