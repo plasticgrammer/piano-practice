@@ -245,6 +245,18 @@ function vexToId(k) {
   return p + oct;
 }
 
+const SOLFEGE_MAP = {
+  'C':'ド','D':'レ','E':'ミ','F':'ファ','G':'ソ','A':'ラ','B':'シ',
+  'C#':'ド♯','D#':'レ♯','F#':'ファ♯','G#':'ソ♯','A#':'ラ♯',
+  'DB':'レ♭','EB':'ミ♭','GB':'ソ♭','AB':'ラ♭','BB':'シ♭',
+};
+
+function toSolfege(noteId) {
+  // "C4" → "ド", "F#4" → "ファ♯"
+  const m = noteId.match(/^([A-G][#b]?)/i);
+  return m ? (SOLFEGE_MAP[m[1].toUpperCase()] || noteId) : noteId;
+}
+
 function splitMeasures(song) {
   const bpm = song.timeNum;
   const measures = [];
@@ -416,7 +428,7 @@ function buildKeyboard() {
     WHITE.forEach((n,i) => {
       const key = document.createElement('div');
       key.className = 'white-key';
-      key.textContent = (n==='C') ? `C${oct}` : '';
+      key.textContent = SOLFEGE_MAP[n] || n;
       key.style.left = `${i * WHITE_KEY_W}px`;
       key.style.position = 'absolute';
       key.style.top = '0';
@@ -444,7 +456,7 @@ function buildKeyboard() {
   lastBlock.style.cssText = `position:relative;display:inline-block;width:${WHITE_KEY_W}px;flex-shrink:0;`;
   const c6 = document.createElement('div');
   c6.className = 'white-key';
-  c6.textContent = 'C6';
+  c6.textContent = 'ド';
   c6.style.cssText = `position:absolute;left:0;top:0;`;
   doKey('C6', c6);
   const sp2 = document.createElement('div');
@@ -528,7 +540,7 @@ function updateStatus() {
   if (done >= total) {
     document.getElementById('nextNote').textContent = 'DONE';
   } else {
-    document.getElementById('nextNote').textContent = vexToId(song.notes[done].k);
+    document.getElementById('nextNote').textContent = toSolfege(vexToId(song.notes[done].k));
   }
 
   document.getElementById('scoreDisp').textContent = `${done} / ${total}`;
