@@ -13,31 +13,72 @@ body{
 }
 /* ─── Header ─── */
 .header{
-  background:#1a1a30;padding:10px 14px;
-  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  background:#1a1a30;flex-shrink:0;
   border-bottom:1px solid #2a2a50;
+}
+.header-row1{
+  padding:10px 14px;display:flex;align-items:center;gap:10px;
 }
 .header h1{font-size:16px;white-space:nowrap;}
 .song-select{
   flex:1;background:#0e0e22;color:#eee;
   border:1px solid #3a3a6a;border-radius:8px;
-  padding:7px 10px;font-size:14px;-webkit-appearance:none;
+  padding:7px 10px;font-size:14px;-webkit-appearance:none;min-width:0;
 }
 .reset-btn{
   background:#e94560;color:#fff;border:none;
   border-radius:8px;padding:7px 13px;font-size:14px;cursor:pointer;
   flex-shrink:0;font-weight:700;
 }
+/* BPM row */
+.header-row2{
+  padding:6px 14px 10px;
+  display:flex;align-items:center;gap:10px;
+}
+.bpm-label{font-size:11px;color:#888;white-space:nowrap;flex-shrink:0;}
+.bpm-slider{
+  flex:1;height:4px;accent-color:#4ecdc4;cursor:pointer;
+  -webkit-appearance:none;background:#2a2a50;border-radius:2px;
+}
+.bpm-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:#4ecdc4;cursor:pointer;
+}
+.bpm-val{
+  font-size:14px;font-weight:700;color:#4ecdc4;
+  font-family:monospace;width:28px;text-align:right;flex-shrink:0;
+}
+.play-btn{
+  background:#4ecdc4;color:#000;border:none;
+  border-radius:8px;padding:6px 14px;font-size:15px;
+  cursor:pointer;font-weight:700;flex-shrink:0;
+  min-width:44px;
+}
 /* ─── Status ─── */
 .status{
   background:#1a1a30;padding:8px 16px;
   display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;border-bottom:1px solid #2a2a50;
+  flex-shrink:0;border-bottom:1px solid #2a2a50;gap:8px;
 }
 .next-label{font-size:11px;color:#888;margin-bottom:2px;}
-.next-note{font-size:28px;font-weight:700;color:#4ecdc4;font-family:monospace;letter-spacing:1px;}
-.feedback-emoji{font-size:26px;min-width:36px;text-align:center;}
-.score-display{font-size:13px;color:#888;text-align:right;}
+.next-note{font-size:26px;font-weight:700;color:#4ecdc4;font-family:monospace;letter-spacing:1px;}
+/* Combo */
+.combo-wrap{flex:1;display:flex;justify-content:center;}
+.combo-badge{
+  font-size:13px;font-weight:800;color:#ff6b35;
+  padding:4px 10px;border-radius:20px;
+  border:2px solid transparent;
+  min-height:26px;display:flex;align-items:center;
+}
+.combo-badge.show{
+  border-color:#ff6b35;background:rgba(255,107,53,.12);
+}
+@keyframes combo-pop{
+  0%  {transform:scale(.4);opacity:0;}
+  55% {transform:scale(1.25);opacity:1;}
+  100%{transform:scale(1);opacity:1;}
+}
+.combo-badge.anim{animation:combo-pop .35s cubic-bezier(.22,1,.36,1) both;}
 /* ─── Progress ─── */
 .progress{height:4px;background:#2a2a50;flex-shrink:0;}
 .progress-fill{height:100%;background:linear-gradient(90deg,#4ecdc4,#e94560);transition:width .3s;}
@@ -64,13 +105,11 @@ body{
   cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;
   display:flex;align-items:flex-end;justify-content:center;
   padding-bottom:8px;font-size:10px;color:#bbb;font-family:monospace;
-  position:relative;z-index:1;transition:background .07s;
-  flex-shrink:0;
+  position:relative;z-index:1;transition:background .07s;flex-shrink:0;
 }
-.white-key.hl  {background:#b2f5e8!important;box-shadow:inset 0 -6px 0 #4ecdc4;}
-.white-key.ok  {background:#6eea90!important;}
-.white-key.ng  {background:#f08888!important;}
-.white-key.dn  {background:#ddeeff!important;}
+.white-key.hl{background:#b2f5e8!important;box-shadow:inset 0 -6px 0 #4ecdc4;}
+.white-key.ok{background:#6eea90!important;}
+.white-key.ng{background:#f08888!important;}
 .black-key{
   width:30px;height:112px;
   background:#1c1c1c;border:1px solid #000;border-top:none;
@@ -79,20 +118,16 @@ body{
   cursor:pointer;touch-action:none;transition:background .07s;
   -webkit-tap-highlight-color:transparent;
 }
-.black-key.hl  {background:#1a7a62!important;border-color:#4ecdc4;}
-.black-key.ok  {background:#1e8c40!important;}
-.black-key.ng  {background:#8c1e1e!important;}
-.black-key.dn  {background:#333!important;}
+.black-key.hl{background:#1a7a62!important;border-color:#4ecdc4;}
+.black-key.ok{background:#1e8c40!important;}
+.black-key.ng{background:#8c1e1e!important;}
 /* ─── Completion ─── */
 .overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.85);
   display:none;place-items:center;z-index:999;
 }
 .overlay.show{display:grid;}
-.card{
-  background:#1a1a30;border-radius:20px;
-  padding:40px 32px;text-align:center;
-}
+.card{background:#1a1a30;border-radius:20px;padding:40px 32px;text-align:center;}
 .card .emoji{font-size:64px;margin-bottom:12px;}
 .card h2{font-size:24px;margin-bottom:6px;}
 .card p{color:#888;font-size:13px;margin-bottom:24px;}
@@ -101,14 +136,24 @@ body{
   border-radius:12px;padding:12px 32px;
   font-size:16px;font-weight:700;cursor:pointer;
 }
+/* ─── Score display ─── */
+.score-display{font-size:13px;color:#888;text-align:right;flex-shrink:0;}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🎹 ピアノ練習</h1>
-  <select class="song-select" id="songSel"></select>
-  <button class="reset-btn" id="resetBtn" title="最初から">↺</button>
+  <div class="header-row1">
+    <h1>🎹</h1>
+    <select class="song-select" id="songSel"></select>
+    <button class="reset-btn" id="resetBtn" title="最初から">↺</button>
+  </div>
+  <div class="header-row2">
+    <span class="bpm-label">BPM</span>
+    <input type="range" class="bpm-slider" id="bpmSlider" min="40" max="160" value="80" step="10">
+    <span class="bpm-val" id="bpmVal">80</span>
+    <button class="play-btn" id="playBtn">▶</button>
+  </div>
 </div>
 
 <div class="status">
@@ -116,7 +161,9 @@ body{
     <div class="next-label">次の音</div>
     <div class="next-note" id="nextNote">──</div>
   </div>
-  <div class="feedback-emoji" id="fbEmoji"></div>
+  <div class="combo-wrap">
+    <div class="combo-badge" id="comboBadge"></div>
+  </div>
   <div class="score-display" id="scoreDisp">0 / 0</div>
 </div>
 
@@ -144,11 +191,8 @@ body{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/4.2.2/vexflow.js"></script>
 <script>
 // ════════════════════════════════════════
-// SONG DATA
+// SONGS
 // ════════════════════════════════════════
-// k = VexFlow key ("c/4"), d = duration (w/h/q/8)
-// acc = accidental string ("#" / "b") or undefined
-
 const SONGS = [
   {
     label:"⭐ きらきら星", timeNum:4, timeDen:4,
@@ -214,7 +258,7 @@ const SONGS = [
 ];
 
 // ════════════════════════════════════════
-// NOTE FREQUENCIES  (C3–C6)
+// NOTE FREQUENCIES
 // ════════════════════════════════════════
 const FREQ = {
   'C3':130.81,'D3':146.83,'E3':164.81,'F3':174.61,'G3':196.00,'A3':220.00,'B3':246.94,
@@ -223,8 +267,7 @@ const FREQ = {
   'C#4':277.18,'D#4':311.13,'F#4':369.99,'G#4':415.30,'A#4':466.16,
   'C5':523.25,'D5':587.33,'E5':659.25,'F5':698.46,'G5':783.99,'A5':880.00,'B5':987.77,
   'C#5':554.37,'D#5':622.25,'F#5':739.99,'G#5':830.61,'A#5':932.33,
-  'C6':1046.50,'D6':1174.66,'E6':1318.51,
-  'C#6':1108.73,'D#6':1244.51,
+  'C6':1046.50,'D6':1174.66,'E6':1318.51,'C#6':1108.73,'D#6':1244.51,
 };
 
 // ════════════════════════════════════════
@@ -234,44 +277,41 @@ let songIdx = 0;
 let currentNote = 0;
 let total = 0;
 let audioCtx = null;
+let combo = 0;
+let bpm = 80;
+let isAutoPlaying = false;
+let autoTimer = null;
 
 // ════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════
-const DUR_BEATS = {w:4,h:2,q:1,'8':0.5,'8d':0.75,hd:3,qd:1.5};
+const DUR_BEATS = {w:4,h:2,q:1,'8':0.5,hd:3,qd:1.5};
 
 function vexToId(k) {
-  // "c/4" → "C4", "c#/4" → "C#4", "cn/4" → "C4", "a#/4" → "A#4"
   const [pitch, oct] = k.split('/');
-  const p = pitch.replace('n','').toUpperCase();
-  return p + oct;
+  return pitch.replace('n','').toUpperCase() + oct;
 }
 
 const SOLFEGE_MAP = {
   'C':'ド','D':'レ','E':'ミ','F':'ファ','G':'ソ','A':'ラ','B':'シ',
   'C#':'ド♯','D#':'レ♯','F#':'ファ♯','G#':'ソ♯','A#':'ラ♯',
-  'DB':'レ♭','EB':'ミ♭','GB':'ソ♭','AB':'ラ♭','BB':'シ♭',
 };
 
 function toSolfege(noteId) {
-  // "C4" → "ド", "F#4" → "ファ♯"
   const m = noteId.match(/^([A-G][#b]?)/i);
   return m ? (SOLFEGE_MAP[m[1].toUpperCase()] || noteId) : noteId;
 }
 
 function splitMeasures(song) {
   const bpm = song.timeNum;
-  const measures = [];
-  let cur = [], beats = 0;
+  const measures = [], cur = [];
+  let beats = 0;
   for (const n of song.notes) {
     cur.push(n);
     beats += DUR_BEATS[n.d] || 1;
-    if (Math.abs(beats - bpm) < 0.01 || beats >= bpm) {
-      measures.push(cur);
-      cur = []; beats = 0;
-    }
+    if (beats >= bpm - 0.01) { measures.push([...cur]); cur.length = 0; beats = 0; }
   }
-  if (cur.length) measures.push(cur);
+  if (cur.length) measures.push([...cur]);
   return measures;
 }
 
@@ -285,54 +325,131 @@ function ensureAudio() {
 
 function playFreq(freq, dur = 1.2) {
   ensureAudio();
-  const ctx = audioCtx;
-  const now = ctx.currentTime;
+  const ctx = audioCtx, now = ctx.currentTime;
   const master = ctx.createGain();
   master.gain.setValueAtTime(0, now);
   master.gain.linearRampToValueAtTime(0.4, now + 0.01);
   master.gain.exponentialRampToValueAtTime(0.001, now + dur);
   master.connect(ctx.destination);
-
-  [[1,1],[2,0.4],[3,0.2],[4,0.1],[6,0.05]].forEach(([h,amp])=>{
-    const osc = ctx.createOscillator();
-    const g   = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq * h;
-    g.gain.value = amp;
-    osc.connect(g); g.connect(master);
-    osc.start(now); osc.stop(now + dur + 0.05);
+  [[1,1],[2,0.4],[3,0.2],[4,0.1],[6,0.05]].forEach(([h,a]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq * h; g.gain.value = a;
+    o.connect(g); g.connect(master); o.start(now); o.stop(now + dur + 0.05);
   });
 }
 
-function playNote(noteId) {
-  const f = FREQ[noteId];
-  if (f) playFreq(f);
+function playTick() {
+  ensureAudio();
+  const ctx = audioCtx, now = ctx.currentTime;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.frequency.value = 1200; o.type = 'sine';
+  g.gain.setValueAtTime(0.15, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(now); o.stop(now + 0.1);
+}
+
+function playNote(noteId) { const f = FREQ[noteId]; if (f) playFreq(f); }
+
+// ════════════════════════════════════════
+// COMBO
+// ════════════════════════════════════════
+function updateCombo(correct) {
+  if (correct) {
+    combo++;
+    if (combo >= 3) showCombo();
+  } else {
+    combo = 0;
+    const badge = document.getElementById('comboBadge');
+    badge.textContent = '';
+    badge.classList.remove('show','anim');
+  }
+}
+
+function showCombo() {
+  const badge = document.getElementById('comboBadge');
+  let text;
+  if      (combo >= 20) text = `${combo} 💥 PERFECT!!`;
+  else if (combo >= 10) text = `${combo} ⚡ AMAZING!`;
+  else if (combo >= 5)  text = `${combo} 🔥 GREAT!`;
+  else                  text = `${combo} 👍 GOOD!`;
+  badge.textContent = text;
+  badge.classList.add('show');
+  badge.classList.remove('anim');
+  requestAnimationFrame(() => requestAnimationFrame(() => badge.classList.add('anim')));
 }
 
 // ════════════════════════════════════════
-// SCORE RENDERING (VexFlow)
+// AUTO-PLAY (テンポ設定)
+// ════════════════════════════════════════
+function startAutoPlay() {
+  isAutoPlaying = true;
+  document.getElementById('playBtn').textContent = '⏸';
+  playTick();
+  scheduleNext(true);
+}
+
+function stopAutoPlay() {
+  isAutoPlaying = false;
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  document.getElementById('playBtn').textContent = '▶';
+}
+
+function scheduleNext(first = false) {
+  const song = SONGS[songIdx];
+  if (!isAutoPlaying || currentNote >= song.notes.length) {
+    stopAutoPlay();
+    if (currentNote >= song.notes.length) setTimeout(showComplete, 300);
+    return;
+  }
+  const note = song.notes[currentNote];
+  const beatMs = 60000 / bpm;
+  const noteMs = (DUR_BEATS[note.d] || 1) * beatMs;
+
+  const noteId = vexToId(note.k);
+  playNote(noteId);
+  flashKey(noteId, 'ok', Math.min(noteMs - 60, 500));
+  currentNote++;
+  updateStatus();
+  renderScore();
+  highlightCurrentKey();
+  updateCombo(true);
+
+  autoTimer = setTimeout(() => scheduleNext(), noteMs);
+}
+
+function toggleAutoPlay() {
+  ensureAudio();
+  if (isAutoPlaying) { stopAutoPlay(); return; }
+  // If song finished, restart
+  if (currentNote >= SONGS[songIdx].notes.length) {
+    currentNote = 0; combo = 0;
+    document.getElementById('comboBadge').textContent = '';
+    document.getElementById('comboBadge').classList.remove('show','anim');
+    updateStatus(); renderScore(); highlightCurrentKey();
+  }
+  // Count-in: 2 ticks then start
+  playTick();
+  setTimeout(() => { playTick(); setTimeout(startAutoPlay, 60000 / bpm); }, 60000 / bpm);
+}
+
+// ════════════════════════════════════════
+// SCORE RENDERING
 // ════════════════════════════════════════
 function renderScore() {
   const container = document.getElementById('score-container');
   container.innerHTML = '';
-
   const song = SONGS[songIdx];
   const measures = splitMeasures(song);
   const VF = Vex.Flow;
 
-  // Layout: measures per row based on screen width
   const scrollW = document.getElementById('scoreScroll').clientWidth || 360;
-  const FIRST_W  = Math.min(220, scrollW - 20);
-  const MEAS_W   = Math.max(140, Math.min(180, (scrollW - 20) / 3));
-  const ROW_H    = 110;
-  const MARGIN   = 10;
+  const FIRST_W = Math.min(220, scrollW - 20);
+  const MEAS_W  = Math.max(140, Math.min(180, (scrollW - 20) / 3));
+  const ROW_H   = 110, MARGIN = 10;
 
-  // Figure out how many measures fit per row
   let perRow = 1;
-  {
-    let used = FIRST_W;
-    while (used + MEAS_W <= scrollW - 20) { used += MEAS_W; perRow++; }
-  }
+  { let used = FIRST_W; while (used + MEAS_W <= scrollW - 20) { used += MEAS_W; perRow++; } }
 
   const rows = [];
   for (let i = 0; i < measures.length; i += perRow) rows.push(measures.slice(i, i + perRow));
@@ -342,32 +459,25 @@ function renderScore() {
   const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
   renderer.resize(totalW, totalH);
   const ctx = renderer.getContext();
-
   let globalIdx = 0;
 
-  rows.forEach((rowMeasures, ri) => {
+  rows.forEach((rowM, ri) => {
     let x = MARGIN;
     const y = MARGIN + ri * ROW_H;
-
-    rowMeasures.forEach((mNotes, mi) => {
-      const isFirst = (ri === 0 && mi === 0);
+    rowM.forEach((mNotes, mi) => {
+      const isFirst = ri === 0 && mi === 0;
       const w = isFirst ? FIRST_W : MEAS_W;
       const stave = new VF.Stave(x, y, w);
       if (isFirst) stave.addClef('treble').addTimeSignature(`${song.timeNum}/${song.timeDen}`);
       stave.setContext(ctx).draw();
 
-      const staveNotes = mNotes.map((n, ni) => {
+      const sNotes = mNotes.map((n, ni) => {
         const gIdx = globalIdx + ni;
         const sn = new VF.StaveNote({ keys: [n.k], duration: n.d });
         if (n.acc) sn.addModifier(new VF.Accidental(n.acc), 0);
-
-        if (gIdx === currentNote) {
-          sn.setStyle({ fillStyle:'#e94560', strokeStyle:'#e94560' });
-        } else if (gIdx < currentNote) {
-          sn.setStyle({ fillStyle:'#4ecdc4', strokeStyle:'#4ecdc4' });
-        } else {
-          sn.setStyle({ fillStyle:'#333', strokeStyle:'#333' });
-        }
+        if (gIdx === currentNote)    sn.setStyle({ fillStyle:'#e94560', strokeStyle:'#e94560' });
+        else if (gIdx < currentNote) sn.setStyle({ fillStyle:'#4ecdc4', strokeStyle:'#4ecdc4' });
+        else                         sn.setStyle({ fillStyle:'#333',    strokeStyle:'#333'    });
         return sn;
       });
       globalIdx += mNotes.length;
@@ -375,162 +485,126 @@ function renderScore() {
       try {
         const voice = new VF.Voice({ num_beats: song.timeNum, beat_value: song.timeDen })
           .setMode(VF.Voice.Mode.SOFT);
-        voice.addTickables(staveNotes);
+        voice.addTickables(sNotes);
         new VF.Formatter().joinVoices([voice]).format([voice], w - (isFirst ? 70 : 24));
         voice.draw(ctx, stave);
-      } catch(e) { console.warn('VexFlow render err', e); }
-
+      } catch(e) { console.warn(e); }
       x += w;
     });
   });
 
-  // Scroll current note into view
-  const curRow = Math.floor(
-    measures.findIndex((_, i) => {
-      let s = 0;
-      for (let j = 0; j <= i; j++) s += measures[j].length;
-      return s > currentNote;
-    }) / perRow
-  );
-  if (curRow >= 0) {
-    document.getElementById('scoreScroll').scrollTop = Math.max(0, curRow * ROW_H - 20);
-  }
+  // Scroll to current note row
+  const curMeasureIdx = measures.findIndex((_, i) => {
+    let s = 0; for (let j = 0; j <= i; j++) s += measures[j].length; return s > currentNote;
+  });
+  const curRow = Math.floor(Math.max(0, curMeasureIdx) / perRow);
+  document.getElementById('scoreScroll').scrollTop = Math.max(0, curRow * ROW_H - 20);
 }
 
 // ════════════════════════════════════════
-// KEYBOARD BUILD
+// KEYBOARD
 // ════════════════════════════════════════
-// Octaves to show: C3–C6 (4 octaves)
 const OCTAVES = [3, 4, 5];
-const WHITE = ['C','D','E','F','G','A','B'];
-// Black key positions (left edge from octave start), offset within 7 white-key block
-// C# at 1*44-14=30, D# at 2*44-14=74, F# at 4*44-14=162, G# at 5*44-14=206, A# at 6*44-14=250
-const BLACKS = [
-  {note:'C#', left:30}, {note:'D#', left:74},
-  {note:'F#', left:162},{note:'G#', left:206},{note:'A#', left:250}
-];
-const WHITE_KEY_W = 44;
+const WHITE   = ['C','D','E','F','G','A','B'];
+const BLACKS  = [{note:'C#',left:30},{note:'D#',left:74},{note:'F#',left:162},{note:'G#',left:206},{note:'A#',left:250}];
+const WHITE_W = 44;
 
 function buildKeyboard() {
   const kb = document.getElementById('keyboard');
   kb.innerHTML = '';
-
-  const doKey = (noteId, el) => {
-    el.dataset.note = noteId;
-    el.addEventListener('pointerdown', e => {
-      e.preventDefault();
-      handlePress(noteId, el);
-    });
+  const doKey = (id, el) => {
+    el.dataset.note = id;
+    el.addEventListener('pointerdown', e => { e.preventDefault(); handlePress(id); });
   };
 
   OCTAVES.forEach(oct => {
     const block = document.createElement('div');
-    block.style.cssText = `position:relative;display:inline-block;width:${WHITE_KEY_W*7}px;flex-shrink:0;`;
-
+    block.style.cssText = `position:relative;display:inline-block;width:${WHITE_W*7}px;flex-shrink:0;`;
     WHITE.forEach((n,i) => {
       const key = document.createElement('div');
       key.className = 'white-key';
       key.textContent = SOLFEGE_MAP[n] || n;
-      key.style.left = `${i * WHITE_KEY_W}px`;
-      key.style.position = 'absolute';
-      key.style.top = '0';
+      key.style.cssText = `position:absolute;left:${i*WHITE_W}px;top:0;`;
       doKey(`${n}${oct}`, key);
       block.appendChild(key);
     });
-    // Spacer so block has height
-    const spacer = document.createElement('div');
-    spacer.style.cssText = `height:180px;display:block;`;
-    block.appendChild(spacer);
-
-    BLACKS.forEach(({note, left}) => {
+    const sp = document.createElement('div');
+    sp.style.cssText = 'height:180px;display:block;';
+    block.appendChild(sp);
+    BLACKS.forEach(({note,left}) => {
       const key = document.createElement('div');
       key.className = 'black-key';
       key.style.left = `${left}px`;
       doKey(`${note}${oct}`, key);
       block.appendChild(key);
     });
-
     kb.appendChild(block);
   });
 
-  // Final C6
-  const lastBlock = document.createElement('div');
-  lastBlock.style.cssText = `position:relative;display:inline-block;width:${WHITE_KEY_W}px;flex-shrink:0;`;
+  // C6
+  const lb = document.createElement('div');
+  lb.style.cssText = `position:relative;display:inline-block;width:${WHITE_W}px;flex-shrink:0;`;
   const c6 = document.createElement('div');
-  c6.className = 'white-key';
-  c6.textContent = 'ド';
-  c6.style.cssText = `position:absolute;left:0;top:0;`;
+  c6.className = 'white-key'; c6.textContent = 'ド';
+  c6.style.cssText = 'position:absolute;left:0;top:0;';
   doKey('C6', c6);
-  const sp2 = document.createElement('div');
-  sp2.style.cssText = `height:180px;display:block;`;
-  lastBlock.appendChild(c6);
-  lastBlock.appendChild(sp2);
-  kb.appendChild(lastBlock);
+  const sp2 = document.createElement('div'); sp2.style.cssText = 'height:180px;display:block;';
+  lb.appendChild(c6); lb.appendChild(sp2); kb.appendChild(lb);
 
-  // Scroll keyboard to C4 (second octave = index 1 → offset 7*44 = 308px)
-  setTimeout(()=>{
-    document.querySelector('.keyboard-wrap').scrollLeft = WHITE_KEY_W * 7 - 20;
-  }, 50);
+  setTimeout(() => { document.querySelector('.keyboard-wrap').scrollLeft = WHITE_W * 7 - 20; }, 50);
 }
 
-function flashKey(noteId, cls, ms = 300) {
-  const el = document.querySelector(`[data-note="${noteId}"]`);
+function flashKey(id, cls, ms = 300) {
+  const el = document.querySelector(`[data-note="${id}"]`);
   if (!el) return;
   el.classList.add(cls);
   setTimeout(() => el.classList.remove(cls), ms);
 }
 
 function highlightCurrentKey() {
-  // Remove previous highlight
   document.querySelectorAll('.hl').forEach(e => e.classList.remove('hl'));
   const song = SONGS[songIdx];
   if (currentNote >= song.notes.length) return;
-  const noteId = vexToId(song.notes[currentNote].k);
-  const el = document.querySelector(`[data-note="${noteId}"]`);
-  if (el) {
-    el.classList.add('hl');
-    // Scroll keyboard to show this key
-    const kbWrap = document.querySelector('.keyboard-wrap');
-    const kbRect = kbWrap.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    if (elRect.left < kbRect.left + 20 || elRect.right > kbRect.right - 20) {
-      el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-    }
+  const id = vexToId(song.notes[currentNote].k);
+  const el = document.querySelector(`[data-note="${id}"]`);
+  if (!el) return;
+  el.classList.add('hl');
+  const wrap = document.querySelector('.keyboard-wrap');
+  const wr = wrap.getBoundingClientRect(), er = el.getBoundingClientRect();
+  if (er.left < wr.left + 20 || er.right > wr.right - 20) {
+    el.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
   }
 }
 
 // ════════════════════════════════════════
 // GAME LOGIC
 // ════════════════════════════════════════
-function handlePress(noteId, el) {
+function handlePress(noteId) {
   ensureAudio();
   playNote(noteId);
+  if (isAutoPlaying) return; // auto-play中は無効
 
   const song = SONGS[songIdx];
   if (currentNote >= song.notes.length) return;
-
   const expected = vexToId(song.notes[currentNote].k);
 
   if (noteId === expected) {
-    // Correct!
     flashKey(noteId, 'ok', 400);
-    document.getElementById('fbEmoji').textContent = '✅';
+    document.getElementById('nextNote').style.color = '#4ecdc4';
     currentNote++;
     updateStatus();
     renderScore();
     highlightCurrentKey();
-
-    if (currentNote >= song.notes.length) {
-      setTimeout(showComplete, 500);
-    }
+    updateCombo(true);
+    if (currentNote >= song.notes.length) setTimeout(showComplete, 500);
   } else {
-    // Wrong
     flashKey(noteId, 'ng', 350);
-    flashKey(expected, 'hl', 600);  // hint
-    document.getElementById('fbEmoji').textContent = '❌';
-    setTimeout(()=>{
-      document.getElementById('fbEmoji').textContent = '';
-    }, 800);
+    flashKey(expected, 'hl', 700);
+    updateCombo(false);
+    // brief shake on next-note display
+    const nn = document.getElementById('nextNote');
+    nn.style.color = '#e94560';
+    setTimeout(() => { nn.style.color = '#4ecdc4'; }, 400);
   }
 }
 
@@ -538,70 +612,63 @@ function updateStatus() {
   const song = SONGS[songIdx];
   total = song.notes.length;
   const done = currentNote;
-
-  if (done >= total) {
-    document.getElementById('nextNote').textContent = 'DONE';
-  } else {
-    document.getElementById('nextNote').textContent = toSolfege(vexToId(song.notes[done].k));
-  }
-
+  document.getElementById('nextNote').textContent =
+    done >= total ? 'DONE' : toSolfege(vexToId(song.notes[done].k));
   document.getElementById('scoreDisp').textContent = `${done} / ${total}`;
-  document.getElementById('progFill').style.width = `${(done/total)*100}%`;
+  document.getElementById('progFill').style.width = `${(done / total) * 100}%`;
 }
 
 function showComplete() {
-  document.getElementById('overlayMsg').textContent = `全${total}音 クリア！`;
+  stopAutoPlay();
+  const badge = document.getElementById('comboBadge');
+  const comboLine = combo >= 3 ? ` コンボ最大 ${combo}🔥` : '';
+  document.getElementById('overlayMsg').textContent = `全${total}音 クリア！${comboLine}`;
   document.getElementById('overlay').classList.add('show');
 }
 
 // ════════════════════════════════════════
-// INIT / RESET
+// INIT
 // ════════════════════════════════════════
 function loadSong(idx) {
-  songIdx = idx;
-  currentNote = 0;
-  document.getElementById('fbEmoji').textContent = '';
+  stopAutoPlay();
+  songIdx = idx; currentNote = 0; combo = 0;
+  document.getElementById('comboBadge').textContent = '';
+  document.getElementById('comboBadge').classList.remove('show','anim');
+  document.getElementById('nextNote').style.color = '#4ecdc4';
   document.getElementById('overlay').classList.remove('show');
-  updateStatus();
-  renderScore();
-  highlightCurrentKey();
+  updateStatus(); renderScore(); highlightCurrentKey();
 }
 
 function init() {
-  // Populate song select
+  // Song select
   const sel = document.getElementById('songSel');
-  SONGS.forEach((s,i) => {
-    const opt = document.createElement('option');
-    opt.value = i; opt.textContent = s.label;
-    sel.appendChild(opt);
-  });
+  SONGS.forEach((s,i) => { const o = document.createElement('option'); o.value=i; o.textContent=s.label; sel.appendChild(o); });
   sel.addEventListener('change', e => loadSong(+e.target.value));
 
+  // BPM
+  const slider = document.getElementById('bpmSlider');
+  const bpmVal = document.getElementById('bpmVal');
+  slider.addEventListener('input', () => { bpm = +slider.value; bpmVal.textContent = bpm; });
+
+  // Buttons
   document.getElementById('resetBtn').addEventListener('click', () => loadSong(songIdx));
+  document.getElementById('playBtn').addEventListener('click', toggleAutoPlay);
   document.getElementById('againBtn').addEventListener('click', () => loadSong(songIdx));
 
   buildKeyboard();
   loadSong(0);
-
-  window.addEventListener('resize', () => {
-    renderScore();
-  });
+  window.addEventListener('resize', () => renderScore());
 }
 
-// Prevent double-tap zoom and pinch zoom
-document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
-document.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
-document.addEventListener('dblclick', e => e.preventDefault());
+// Prevent zoom
+document.addEventListener('gesturestart',  e => e.preventDefault(), { passive:false });
+document.addEventListener('gesturechange', e => e.preventDefault(), { passive:false });
+document.addEventListener('gestureend',    e => e.preventDefault(), { passive:false });
+document.addEventListener('dblclick',      e => e.preventDefault());
 
-// Wait for VexFlow to load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  // Script loaded after DOM
-  if (typeof Vex !== 'undefined') init();
-  else window.addEventListener('load', init);
-}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else if (typeof Vex !== 'undefined') init();
+else window.addEventListener('load', init);
 </script>
 </body>
 </html>
