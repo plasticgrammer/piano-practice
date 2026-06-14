@@ -382,71 +382,67 @@ function showCombo() {
 // ════════════════════════════════════════
 // AUTO-PLAY (テンポ設定)
 // ════════════════════════════════════════
-let pendingTimers = [];
-
-function clearAllTimers() {
-  pendingTimers.forEach(t => clearTimeout(t));
-  pendingTimers = [];
-  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
-}
-
-function safeTimeout(fn, ms) {
-  const t = setTimeout(() => {
-    pendingTimers = pendingTimers.filter(x => x !== t);
-    fn();
-  }, ms);
-  pendingTimers.push(t);
-  return t;
-}
+// セッションIDで古いタイマーを無効化する方式
+let autoPlayId = 0;
 
 function stopAutoPlay() {
   isAutoPlaying = false;
-  clearAllTimers();
+  autoPlayId++;   // 全ての pending コールバックを無効化
   document.getElementById('playBtn').textContent = '▶';
 }
 
-function playNextAutoNote() {
-  if (!isAutoPlaying) return;
+function playNextAutoNote(sid) {
+  // セッションが変わっていたら何もしない
+  if (sid !== autoPlayId || !isAutoPlaying) return;
+
   const song = SONGS[songIdx];
   if (currentNote >= song.notes.length) {
     stopAutoPlay();
     setTimeout(showComplete, 300);
     return;
   }
+
   const note = song.notes[currentNote];
   const beatMs = 60000 / bpm;
   const noteMs = (DUR_BEATS[note.d] || 1) * beatMs;
-
   const noteId = vexToId(note.k);
+
   playNote(noteId);
   flashKey(noteId, 'ok', Math.min(noteMs - 60, 500));
   currentNote++;
   updateStatus();
-  renderScore();
+  try { renderScore(); } catch(e) { console.warn('renderScore:', e); }
   highlightCurrentKey();
   updateCombo(true);
 
-  safeTimeout(playNextAutoNote, noteMs);
+  // 次の音をスケジュール（キャプチャしたsidで識別）
+  setTimeout(() => playNextAutoNote(sid), noteMs);
 }
 
 function toggleAutoPlay() {
   ensureAudio();
   if (isAutoPlaying) { stopAutoPlay(); return; }
-  // If song finished, restart
+
+  // 曲が終わっていたら先頭から
   if (currentNote >= SONGS[songIdx].notes.length) {
     currentNote = 0; combo = 0;
     document.getElementById('comboBadge').textContent = '';
     document.getElementById('comboBadge').classList.remove('show','anim');
     updateStatus(); renderScore(); highlightCurrentKey();
   }
+
   isAutoPlaying = true;
+  autoPlayId++;
+  const sid = autoPlayId;
   document.getElementById('playBtn').textContent = '⏸';
-  // Count-in: 2 ticks, then start
+
+  // カウントイン: tick tick → 演奏開始
   const beatMs = 60000 / bpm;
   playTick();
-  safeTimeout(() => {
+  setTimeout(() => {
+    if (sid !== autoPlayId) return;
     playTick();
-    safeTimeout(playNextAutoNote, beatMs);
+    setTimeout(() => playNextAutoNote(sid), beatMs);
   }, beatMs);
 }
 
