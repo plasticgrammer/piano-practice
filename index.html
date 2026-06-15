@@ -254,7 +254,77 @@ const SONGS = [
       {k:"e/5",d:"q"},{k:"c/5",d:"q"},{k:"d/5",d:"q"},
       {k:"c/5",d:"h"},{k:"c/5",d:"q"},
     ]
-  }
+  },
+  {
+    label:"🐸 かえるの合唱", timeNum:4, timeDen:4,
+    notes:[
+      {k:"c/4",d:"q"},{k:"d/4",d:"q"},{k:"e/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},{k:"c/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"h"},
+      {k:"d/4",d:"q"},{k:"d/4",d:"q"},{k:"d/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"g/4",d:"q"},{k:"g/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},{k:"c/4",d:"h"},
+      {k:"c/4",d:"q"},{k:"c/4",d:"q"},{k:"c/4",d:"q"},{k:"c/4",d:"q"},
+      {k:"c/4",d:"w"},
+    ]
+  },
+  {
+    label:"🦋 ちょうちょ", timeNum:2, timeDen:4,
+    notes:[
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"e/4",d:"h"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"e/4",d:"h"},
+      {k:"f/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"d/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"e/4",d:"h"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"e/4",d:"h"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"e/4",d:"h"},
+      {k:"f/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"d/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"c/4",d:"h"},
+    ]
+  },
+  {
+    label:"🎅 ジングルベル", timeNum:4, timeDen:4,
+    notes:[
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"g/4",d:"q"},{k:"c/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"e/4",d:"w"},
+      {k:"f/4",d:"q"},{k:"f/4",d:"q"},{k:"f/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"f/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"d/4",d:"q"},{k:"d/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"d/4",d:"h"},{k:"g/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"g/4",d:"q"},{k:"c/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"e/4",d:"w"},
+      {k:"f/4",d:"q"},{k:"f/4",d:"q"},{k:"f/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"f/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},{k:"e/4",d:"q"},
+      {k:"g/4",d:"q"},{k:"g/4",d:"q"},{k:"f/4",d:"q"},{k:"d/4",d:"q"},
+      {k:"c/4",d:"w"},
+    ]
+  },
+  {
+    label:"🌉 ロンドン橋", timeNum:4, timeDen:4,
+    notes:[
+      {k:"g/4",d:"q"},{k:"a/4",d:"q"},{k:"g/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"f/4",d:"q"},{k:"g/4",d:"h"},
+      {k:"d/4",d:"q"},{k:"e/4",d:"q"},{k:"f/4",d:"h"},
+      {k:"e/4",d:"q"},{k:"f/4",d:"q"},{k:"g/4",d:"h"},
+      {k:"g/4",d:"q"},{k:"a/4",d:"q"},{k:"g/4",d:"q"},{k:"f/4",d:"q"},
+      {k:"e/4",d:"q"},{k:"f/4",d:"q"},{k:"g/4",d:"q"},{k:"g/4",d:"q"},
+      {k:"d/4",d:"h"},{k:"g/4",d:"h"},
+      {k:"c/4",d:"w"},
+    ]
+  },
 ];
 
 // ════════════════════════════════════════
@@ -643,9 +713,18 @@ function showComplete() {
 // ════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════
+function saveSong(idx) {
+  try { localStorage.setItem('piano_song', idx); } catch(e) {}
+}
+function loadedSong() {
+  try { return Math.min(Math.max(0, parseInt(localStorage.getItem('piano_song')) || 0), SONGS.length - 1); }
+  catch(e) { return 0; }
+}
+
 function loadSong(idx) {
   stopAutoPlay();
   songIdx = idx; currentNote = 0; combo = 0;
+  saveSong(idx);
   document.getElementById('comboBadge').textContent = '';
   document.getElementById('comboBadge').classList.remove('show','anim');
   document.getElementById('nextNote').style.color = '#4ecdc4';
@@ -670,7 +749,9 @@ function init() {
   document.getElementById('againBtn').addEventListener('click', () => loadSong(songIdx));
 
   buildKeyboard();
-  loadSong(0);
+  const startIdx = loadedSong();
+  sel.value = startIdx;
+  loadSong(startIdx);
   window.addEventListener('resize', () => renderScore());
 }
 
